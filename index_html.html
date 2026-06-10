@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projek Sewaan Sekolah-Sekolah Kuantan</title>
+    
+    <!-- Memuatkan Tailwind CSS secara CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CSS Khusus untuk Scrollbar Skeuomorphic -->
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #E0E5EC;
+            border-radius: 10px;
+            box-shadow: inset 3px 3px 6px #c4c9d0, inset -3px -3px 6px #fcffff;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #a3b1c6;
+            border-radius: 10px;
+            box-shadow: 2px 2px 5px #8c97a9, -2px -2px 5px #bacbdd;
+        }
+        .custom-scrollbar::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+        
+        /* Kelas Utiliti Skeuomorphic */
+        .card-skeuo {
+            background-color: #E0E5EC;
+            box-shadow: 9px 9px 16px rgba(163,177,198,0.6), -9px -9px 16px rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .inset-skeuo {
+            background-color: #E0E5EC;
+            box-shadow: inset 6px 6px 10px 0 rgba(163,177,198,0.7), inset -6px -6px 10px 0 rgba(255,255,255,1);
+        }
+        .btn-skeuo {
+            background-color: #E0E5EC;
+            box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #ffffff;
+            border: 1px solid rgba(255,255,255,0.6);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-skeuo:active {
+            box-shadow: inset 4px 4px 8px #b8b9be, inset -4px -4px 8px #ffffff;
+        }
+    </style>
+</head>
+<body class="bg-[#E0E5EC] text-[#4A5568] font-sans min-h-screen">
+
+    <!-- Skrin Memuat Turun -->
+    <div id="loading-screen" class="min-h-screen flex flex-col items-center justify-center">
+        <div class="flex flex-col items-center gap-4">
+            <div class="inset-skeuo rounded-full w-16 h-16 flex items-center justify-center animate-spin">
+                <div class="w-10 h-10 bg-blue-400 rounded-full shadow-[0_0_15px_rgba(96,165,250,0.6)]"></div>
+            </div>
+            <p class="font-bold tracking-widest animate-pulse uppercase">Memuat Turun Data...</p>
+        </div>
+    </div>
+
+    <!-- Skrin Ralat (Disembunyikan secara lalai) -->
+    <div id="error-screen" class="min-h-screen flex items-center justify-center p-6 hidden">
+        <div class="card-skeuo rounded-2xl p-8 max-w-lg text-center border-red-300">
+            <h2 class="text-2xl font-bold text-red-500 mb-4">Ralat Data</h2>
+            <p id="error-message" class="text-gray-600"></p>
+        </div>
+    </div>
+
+    <!-- Antaramuka Utama (Disembunyikan semasa memuat turun) -->
+    <div id="main-content" class="p-4 md:p-8 hidden">
+        
+        <!-- Header Utama -->
+        <div class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#4A5568] to-[#2D3748] drop-shadow-sm uppercase tracking-tight">
+                Projek Sewaan Sekolah-Sekolah Kuantan
+            </h1>
+            <p class="text-[#718096] font-medium mt-2">Dashboard Analitik Pendidikan Profesional</p>
+        </div>
+
+        <!-- Susun Atur Bento Box -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Panel Penapis (Filters) - Kiri -->
+            <div class="card-skeuo rounded-2xl p-6 lg:col-span-3 flex flex-col gap-6 h-fit">
+                <div class="flex items-center gap-2 border-b border-[#ffffff60] pb-3">
+                    <svg class="w-6 h-6 text-[#718096]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    <h2 class="text-xl font-bold">Tapisan Data</h2>
+                </div>
+                
+                <!-- Filter Selects -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-bold text-[#6b7280] ml-1 uppercase tracking-wider">Nama Sekolah</label>
+                    <div class="inset-skeuo rounded-xl p-1">
+                        <select id="filter-sekolah" class="w-full bg-transparent border-none focus:outline-none p-3 text-[#4A5568] font-medium appearance-none cursor-pointer">
+                            <option value="">SEMUA NAMA SEKOLAH</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-bold text-[#6b7280] ml-1 uppercase tracking-wider">PDT</label>
+                    <div class="inset-skeuo rounded-xl p-1">
+                        <select id="filter-pdt" class="w-full bg-transparent border-none focus:outline-none p-3 text-[#4A5568] font-medium appearance-none cursor-pointer">
+                            <option value="">SEMUA PDT</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-bold text-[#6b7280] ml-1 uppercase tracking-wider">PDP</label>
+                    <div class="inset-skeuo rounded-xl p-1">
+                        <select id="filter-pdp" class="w-full bg-transparent border-none focus:outline-none p-3 text-[#4A5568] font-medium appearance-none cursor-pointer">
+                            <option value="">SEMUA PDP</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-bold text-[#6b7280] ml-1 uppercase tracking-wider">Peranti Guru</label>
+                    <div class="inset-skeuo rounded-xl p-1">
+                        <select id="filter-peranti" class="w-full bg-transparent border-none focus:outline-none p-3 text-[#4A5568] font-medium appearance-none cursor-pointer">
+                            <option value="">SEMUA PERANTI GURU</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="btn-reset" class="btn-skeuo rounded-xl mt-4 text-sm py-2 font-bold hover:text-[#2c333e]">
+                    Set Semula Tapisan
+                </button>
+            </div>
+
+            <!-- Panel Utama Kanan -->
+            <div class="lg:col-span-9 flex flex-col gap-6">
+                
+                <!-- Kad Skor (Scorecards) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card-skeuo rounded-2xl flex flex-col items-center justify-center text-center p-8 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-200 rounded-bl-full opacity-30 mix-blend-multiply"></div>
+                        <p class="text-lg font-bold text-[#718096] uppercase tracking-widest mb-2">Status F1</p>
+                        <h3 id="score-f1" class="text-5xl font-black text-blue-600 drop-shadow-sm">0</h3>
+                    </div>
+
+                    <div class="card-skeuo rounded-2xl flex flex-col items-center justify-center text-center p-8 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-teal-200 rounded-bl-full opacity-30 mix-blend-multiply"></div>
+                        <p class="text-lg font-bold text-[#718096] uppercase tracking-widest mb-2">Status F2</p>
+                        <h3 id="score-f2" class="text-5xl font-black text-teal-600 drop-shadow-sm">0</h3>
+                    </div>
+
+                    <div class="card-skeuo rounded-2xl flex flex-col items-center justify-center text-center p-8 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-red-200 rounded-bl-full opacity-30 mix-blend-multiply"></div>
+                        <p class="text-lg font-bold text-[#718096] uppercase tracking-widest mb-2">Not Found</p>
+                        <h3 id="score-notfound" class="text-5xl font-black text-red-500 drop-shadow-sm">0</h3>
+                    </div>
+                </div>
+
+                <!-- Panel Jadual Data & Butang Ekstrak -->
+                <div class="card-skeuo rounded-2xl p-6 flex flex-col flex-grow">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 border-b border-[#ffffff60] pb-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <svg class="w-6 h-6 text-[#718096]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                            </svg>
+                            Pangkalan Data (<span id="record-count">0</span> rekod)
+                        </h2>
+                        <button id="btn-export" class="btn-skeuo rounded-xl px-6 py-3 flex items-center gap-2 font-bold text-green-700 bg-green-100/50 hover:bg-green-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Muat Turun Excel
+                        </button>
+                    </div>
+
+                    <div class="inset-skeuo rounded-xl flex-grow overflow-hidden relative min-h-[400px]">
+                        <div class="overflow-auto max-h-[500px] w-full p-2 custom-scrollbar">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th class="sticky top-0 z-10 bg-[#e0e5ec] p-4 text-xs font-extrabold tracking-wider text-[#4A5568] uppercase shadow-[0_4px_6px_-1px_rgba(163,177,198,0.4)]">TIMESTAMP</th>
+                                        <th class="sticky top-0 z-10 bg-[#e0e5ec] p-4 text-xs font-extrabold tracking-wider text-[#4A5568] uppercase shadow-[0_4px_6px_-1px_rgba(163,177,198,0.4)]">NAMA SEKOLAH</th>
+                                        <th class="sticky top-0 z-10 bg-[#e0e5ec] p-4 text-xs font-extrabold tracking-wider text-[#4A5568] uppercase shadow-[0_4px_6px_-1px_rgba(163,177,198,0.4)]">PDT</th>
+                                        <th class="sticky top-0 z-10 bg-[#e0e5ec] p-4 text-xs font-extrabold tracking-wider text-[#4A5568] uppercase shadow-[0_4px_6px_-1px_rgba(163,177,198,0.4)]">PDP</th>
+                                        <th class="sticky top-0 z-10 bg-[#e0e5ec] p-4 text-xs font-extrabold tracking-wider text-[#4A5568] uppercase shadow-[0_4px_6px_-1px_rgba(163,177,198,0.4)]">PERANTI GURU</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                    <!-- Baris jadual akan diisi menggunakan JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skrip Logik (Vanilla JavaScript) -->
+    <script>
+        // --- Pembolehubah Utama ---
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTrQS5SS1aKLpCrqzB1ACDY40oTU13c0DyD_w37f7StVcFFC4F5vR2Wgj1mcdE5acGx4A3nZ_hUd9Bg/pub?output=csv";
+        const displayHeaders = ['TIMESTAMP', 'NAMA SEKOLAH', 'PDT', 'PDP', 'PERANTI GURU'];
+        
+        let allData = [];
+        let filteredData = [];
+
+        // Elemen DOM
+        const elLoading = document.getElementById('loading-screen');
+        const elError = document.getElementById('error-screen');
+        const elMain = document.getElementById('main-content');
+        const elTableBody = document.getElementById('table-body');
+        const elRecordCount = document.getElementById('record-count');
+
+        const filterSekolah = document.getElementById('filter-sekolah');
+        const filterPDT = document.getElementById('filter-pdt');
+        const filterPDP = document.getElementById('filter-pdp');
+        const filterPeranti = document.getElementById('filter-peranti');
+
+        // --- Logik Pemprosesan CSV (Parse CSV) ---
+        function parseCSV(str) {
+            const arr = [];
+            let quote = false;
+            let row = [], col = '';
+            for (let c = 0; c < str.length; c++) {
+                let cc = str[c], nc = str[c+1];
+                if (cc === '"' && quote && nc === '"') { col += cc; ++c; continue; }
+                if (cc === '"') { quote = !quote; continue; }
+                if (cc === ',' && !quote) { row.push(col.trim()); col = ''; continue; }
+                if (cc === '\r' && nc === '\n' && !quote) {
+                    row.push(col.trim()); arr.push(row); col = ''; row = []; ++c; continue;
+                }
+                if (cc === '\n' && !quote) {
+                    row.push(col.trim()); arr.push(row); col = ''; row = []; continue;
+                }
+                col += cc;
+            }
+            if (col !== '' || row.length > 0) {
+                row.push(col.trim());
+                arr.push(row);
+            }
+            return arr;
+        }
+
+        // --- Memuat Turun Data (Fetch) ---
+        async function fetchData() {
+            try {
+                const response = await fetch(CSV_URL);
+                if (!response.ok) throw new Error("Gagal mengambil data dari pautan Google Sheet.");
+                const text = await response.text();
+                
+                const rawData = parseCSV(text);
+                if (rawData.length < 2) throw new Error("Tiada data di dalam sheet.");
+
+                const headers = rawData[0].map(h => h.trim().toUpperCase());
+                
+                allData = rawData.slice(1).map(row => {
+                    let obj = {};
+                    headers.forEach((header, index) => {
+                        obj[header] = row[index] || '';
+                    });
+                    return obj;
+                }).filter(row => Object.values(row).some(v => v !== '')); // Buang baris kosong
+
+                filteredData = [...allData];
+
+                setupDropdowns();
+                renderUI();
+
+                // Paparkan skrin utama
+                elLoading.classList.add('hidden');
+                elMain.classList.remove('hidden');
+            } catch (err) {
+                elLoading.classList.add('hidden');
+                elError.classList.remove('hidden');
+                document.getElementById('error-message').textContent = err.message;
+            }
+        }
+
+        // --- Menyediakan Pilihan Dropdown ---
+        function setupDropdowns() {
+            const getUnique = (key) => [...new Set(allData.map(item => item[key]).filter(Boolean))].sort();
+
+            const populateSelect = (selectElem, optionsList) => {
+                optionsList.forEach(opt => {
+                    const el = document.createElement('option');
+                    el.value = opt;
+                    el.textContent = opt;
+                    selectElem.appendChild(el);
+                });
+            };
+
+            populateSelect(filterSekolah, getUnique('NAMA SEKOLAH'));
+            populateSelect(filterPDT, getUnique('PDT'));
+            populateSelect(filterPDP, getUnique('PDP'));
+            populateSelect(filterPeranti, getUnique('PERANTI GURU'));
+        }
+
+        // --- Logik Penapisan Data (Filter) ---
+        function applyFilters() {
+            const valSekolah = filterSekolah.value;
+            const valPDT = filterPDT.value;
+            const valPDP = filterPDP.value;
+            const valPeranti = filterPeranti.value;
+
+            filteredData = allData.filter(row => {
+                const matchSekolah = valSekolah === '' || row['NAMA SEKOLAH'] === valSekolah;
+                const matchPDT = valPDT === '' || row['PDT'] === valPDT;
+                const matchPDP = valPDP === '' || row['PDP'] === valPDP;
+                const matchPeranti = valPeranti === '' || row['PERANTI GURU'] === valPeranti;
+                return matchSekolah && matchPDT && matchPDP && matchPeranti;
+            });
+
+            renderUI();
+        }
+
+        // --- Kemas Kini Paparan (Render) ---
+        function renderUI() {
+            // Kemas kini jumlah rekod
+            elRecordCount.textContent = filteredData.length;
+
+            // Kemas kini Jadual
+            if (filteredData.length === 0) {
+                elTableBody.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-[#718096] font-medium">Tiada rekod padanan ditemui berdasarkan tapisan anda.</td></tr>`;
+            } else {
+                let htmlStr = '';
+                filteredData.forEach(row => {
+                    htmlStr += `<tr class="border-b border-[#ffffff60] hover:bg-[#d5dbe4] transition-colors">`;
+                    displayHeaders.forEach(header => {
+                        htmlStr += `<td class="p-4 text-sm text-[#4A5568]">${row[header] || '-'}</td>`;
+                    });
+                    htmlStr += `</tr>`;
+                });
+                elTableBody.innerHTML = htmlStr;
+            }
+
+            // Pengiraan Scorecard
+            let f1Count = 0, f2Count = 0, notFoundCount = 0;
+            filteredData.forEach(row => {
+                const rowString = Object.values(row).join(' ').toUpperCase();
+                if (rowString.includes('NOT FOUND')) {
+                    notFoundCount++;
+                } else if (rowString.includes('F1') || rowString.includes('FASA 1')) {
+                    f1Count++;
+                } else if (rowString.includes('F2') || rowString.includes('FASA 2')) {
+                    f2Count++;
+                }
+            });
+
+            document.getElementById('score-f1').textContent = f1Count;
+            document.getElementById('score-f2').textContent = f2Count;
+            document.getElementById('score-notfound').textContent = notFoundCount;
+        }
+
+        // --- Logik Muat Turun Excel ---
+        function exportToExcel() {
+            if (!filteredData.length) {
+                alert("Tiada data untuk dimuat turun.");
+                return;
+            }
+
+            let tableHtml = `<table><thead><tr>${displayHeaders.map(h => `<th style="background-color: #e2e8f0; border: 1px solid #cbd5e1;">${h}</th>`).join('')}</tr></thead><tbody>`;
+            
+            filteredData.forEach(row => {
+                tableHtml += `<tr>${displayHeaders.map(h => `<td style="border: 1px solid #cbd5e1;">${row[h] || ''}</td>`).join('')}</tr>`;
+            });
+            tableHtml += `</tbody></table>`;
+
+            const blob = new Blob([`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Data Projek</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>${tableHtml}</body></html>`], {
+                type: 'application/vnd.ms-excel'
+            });
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Projek_Sewaan_Sekolah_Kuantan.xls';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- Pendaftaran Event Listeners ---
+        filterSekolah.addEventListener('change', applyFilters);
+        filterPDT.addEventListener('change', applyFilters);
+        filterPDP.addEventListener('change', applyFilters);
+        filterPeranti.addEventListener('change', applyFilters);
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            filterSekolah.value = '';
+            filterPDT.value = '';
+            filterPDP.value = '';
+            filterPeranti.value = '';
+            applyFilters();
+        });
+
+        document.getElementById('btn-export').addEventListener('click', exportToExcel);
+
+        // Mulakan inisialisasi aplikasi apabila DOM sedia
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
